@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #F8FAFC;
+  --text: #0F172A;
+  --card-bg: #FFFFFF;
+  --border: #E2E8F0;
+  --accent: #F59E0B;
+  --accent-hover: #D97706;
+}
+
+[data-theme="dark"] {
+  --bg: #020617;
+  --text: #F8FAFC;
+  --card-bg: #0F172A;
+  --border: #1E293B;
+  --accent: #FBBF24;
+  --accent-hover: #F59E0B;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.glass-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.accent-text {
+  color: var(--accent);
+}
+
+.accent-bg {
+  background-color: var(--accent);
+}
+
+.accent-border {
+  border-color: var(--accent);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+@keyframes flow {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-flow {
+  stroke-dasharray: 5, 5;
+  animation: flow 1s linear infinite;
+}
