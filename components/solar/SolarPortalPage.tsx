@@ -5,6 +5,7 @@ import { startTransition, useEffect, useMemo, useRef, useState } from 'react';
 import { AppNavbar } from '@/components/solar/AppNavbar';
 import { ControlSidebar } from '@/components/solar/ControlSidebar';
 import { EnergyChartCard } from '@/components/solar/EnergyChartCard';
+import { EngineeringSettingsPanel } from '@/components/solar/EngineeringSettingsPanel';
 import { FeasibilityModal } from '@/components/solar/feasibility/FeasibilityModal';
 import { FeasibilityReportPages } from '@/components/solar/feasibility/FeasibilityReportPages';
 import { MetricsStrip } from '@/components/solar/MetricsStrip';
@@ -646,10 +647,7 @@ export function SolarPortalPage() {
             financialSummary={financialSummary}
             onLayoutFieldChange={updateLayoutField}
             onEnvironmentFieldChange={updateEnvironmentField}
-            onEngineeringFieldChange={updateEngineeringField}
             onFinancialFieldChange={updateFinancialField}
-            onApplyEngineeringTemplate={applyTechnicalTemplate}
-            onResetTechnicalDefaults={resetTechnicalDefaults}
           />
 
           <div className="flex flex-col gap-5">
@@ -671,6 +669,14 @@ export function SolarPortalPage() {
               onSelectPanel={setSelectedPanel}
               onMovePanel={movePanel}
               onCameraPreset={setCameraPreset}
+            />
+            <EngineeringSettingsPanel
+              project={project}
+              results={results}
+              onEnvironmentFieldChange={updateEnvironmentField}
+              onEngineeringFieldChange={updateEngineeringField}
+              onApplyEngineeringTemplate={applyTechnicalTemplate}
+              onResetTechnicalDefaults={resetTechnicalDefaults}
             />
             <EnergyChartCard curve={curve} results={results} chartMetric={metrics[0]} />
           </div>
