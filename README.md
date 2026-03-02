@@ -2,19 +2,29 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Ubden Solar FX Portal
 
-This contains everything you need to run your app locally.
+Advanced solar array planning workspace with deterministic energy calculations, meter-based nesting, and a dedicated 3D review scene.
 
-View your app in AI Studio: https://ai.studio/apps/671fdfd1-6902-42d0-9c74-6bfd0fb985dd
+## Runtime
 
-## Run Locally
+- Node.js `22.x`
+- npm `10+`
 
-**Prerequisites:**  Node.js
+The repo is pinned to Node 22 via [`.nvmrc`](./.nvmrc) and `package.json > engines`.
 
+## Local Development
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Start the dev server:
    `npm run dev`
+3. Run quality checks:
+   `npm run lint`
+   `npm run test`
+   `npm run build`
+
+## Notes
+
+- The app stores project state under `ubden-solar-fx:v2` in local storage and migrates legacy scattered keys on first load.
+- External CI or Docker images should use a Node 22 base image to stay aligned with the repo toolchain.

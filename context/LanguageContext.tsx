@@ -1,180 +1,242 @@
-'use client'
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Language = 'tr' | 'en'
+type Language = 'tr' | 'en';
+type TranslationDictionary = Record<string, string>;
 
 interface LanguageContextType {
-  language: Language
-  setLanguage: (lang: Language) => void
-  t: (key: string) => string
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  t: (key: string, params?: Record<string, string | number>) => string;
 }
 
-const translations = {
+const translations: Record<Language, TranslationDictionary> = {
   en: {
-    'nav.dashboard': 'Dashboard',
-    'nav.projects': 'Projects',
-    'nav.engineering': 'Engineering',
-    'hero.title': 'Ubden® Solar FX',
-    'hero.subtitle': 'Precision Solar Engineering & Simulation Portal',
-    'config.panel_type': 'Panel Type',
-    'config.inverter_type': 'Inverter Type',
-    'config.angle': 'Tilt Angle',
-    'config.azimuth': 'Azimuth',
-    'stats.capacity': 'Estimated Capacity',
-    'stats.efficiency': 'System Efficiency',
-    'stats.output': 'Daily Output',
-    'stats.degradation': 'Annual Degradation',
-    'stats.weather': 'Weather Condition',
+    'portal.title': 'Solar Engineering Portal',
+    'portal.badge.runtime': 'Runtime',
+    'portal.badge.engineering': 'Deterministic Model',
+    'actions.toggle_language': 'Toggle language',
+    'actions.toggle_theme': 'Toggle theme',
+    'actions.add_panel': 'Add Panel',
+    'actions.rotate': 'Rotate',
+    'actions.delete': 'Delete',
+    'actions.clear': 'Clear',
+    'actions.export': 'Export CSV',
     'panel.mono': 'Monocrystalline',
     'panel.poly': 'Polycrystalline',
+    'panel.small': 'Compact 430W',
+    'panel.medium': 'Prime 550W',
+    'panel.large': 'Utility 610W',
     'inverter.string': 'String Inverter',
     'inverter.micro': 'Micro Inverter',
     'inverter.hybrid': 'Hybrid Inverter',
-    'layout.title': 'Panel Layout Placement',
-    'layout.add': 'Add Panel',
-    'layout.clear': 'Clear All',
-    'layout.confirm_clear': 'Are you sure you want to clear all panels?',
-    'layout.export': 'Export Project',
-    'layout.rotate': 'Rotate Panel',
-    'layout.width': 'Layout Width (m)',
-    'layout.height': 'Layout Height (m)',
-    'layout.dimensions': 'Layout Dimensions',
-    'layout.panel_size': 'Panel Size',
-    'panel.small': 'Small (300W)',
-    'panel.medium': 'Medium (450W)',
-    'panel.large': 'Large (600W)',
-    'engineering.details': 'Technical Specifications',
-    'engineering.voltage': 'System Voltage',
-    'engineering.current': 'Operating Current',
-    'engineering.temp': 'Cell Temperature',
-    'config.degradation': 'Degradation Rate',
-    'config.weather': 'Weather Factor',
-    'tooltip.add_panel': 'Add a new solar panel to the layout',
-    'tooltip.clear_all': 'Remove all panels from the current layout',
-    'tooltip.export': 'Download project data as CSV',
-    'tooltip.panel_type': 'Select the semiconductor technology for the panels',
-    'tooltip.inverter': 'Select the power conversion technology',
-    'tooltip.angle': 'Adjust the vertical tilt of the panels relative to the ground',
-    'tooltip.azimuth': 'Adjust the horizontal orientation (North=0, East=90, South=180, West=270)',
-    'tooltip.degradation': 'Simulate annual performance loss over time',
-    'tooltip.weather': 'Adjust for local cloud cover and atmospheric conditions',
-    'financial.title': 'Financial Analysis',
-    'financial.unit_price': 'Electricity Unit Price',
-    'financial.currency': 'Currency',
-    'financial.consumption': 'Avg. Monthly Consumption',
-    'financial.savings_daily': 'Daily Savings',
-    'financial.savings_yearly': 'Yearly Savings',
-    'financial.coverage': 'Consumption Coverage',
-    'engineering.advanced': 'Advanced Engineering Parameters',
-    'engineering.presets': 'Brand Presets',
-    'engineering.temp_coeff': 'Temp. Coefficient (Pmax)',
-    'engineering.soiling': 'Soiling Loss',
-    'engineering.mismatch': 'Mismatch Loss',
-    'engineering.dc_ohmic': 'DC Ohmic Loss',
-    'engineering.shading': 'Shading Loss',
-    'engineering.inverter_eff': 'Inverter Efficiency',
-    'disclaimer.text': 'Note: These values are calculated based on optimum conditions and theoretical models.',
+    'metrics.daily_energy': 'Daily Energy',
+    'metrics.daily_hint': 'Based on peak sun hours and deterministic loss stack',
+    'metrics.annual_energy': 'Annual Energy',
+    'metrics.annual_hint': 'Year-0 projection before degradation',
+    'metrics.fill_factor': 'Fill Factor',
+    'metrics.electrical_consistency': 'Electrical Consistency',
+    'metrics.monthly_savings': 'Monthly Savings',
+    'metrics.coverage': 'coverage',
+    'chart.label': 'Production Curve',
+    'chart.title': 'Daily Power Shape',
+    'chart.summary': 'Peak {peak} kWp | weather {weather} | loss factor {loss}',
+    'chart.placeholder': 'Preparing live production chart...',
+    'sidebar.layout_label': 'Project Envelope',
+    'sidebar.layout_title': 'Layout + Resource Inputs',
+    'sidebar.engineering_label': 'Electrical Model',
+    'sidebar.engineering_title': 'Engineering Constraints',
+    'sidebar.financial_label': 'Commercial Layer',
+    'sidebar.financial_title': 'Financial Inputs',
+    'sidebar.summary_label': 'Decision Snapshot',
+    'sidebar.summary_title': 'Quick Summary',
+    'fields.layout_width': 'Layout Width',
+    'fields.layout_height': 'Layout Height',
+    'fields.panel_type': 'Panel Type',
+    'fields.inverter_type': 'Inverter',
+    'fields.tilt': 'Tilt',
+    'fields.azimuth': 'Azimuth',
+    'fields.weather_factor': 'Weather Factor',
+    'fields.peak_sun_hours': 'Peak Sun Hours',
+    'fields.degradation': 'Degradation',
+    'fields.system_voltage': 'System Voltage',
+    'fields.operating_current': 'Operating Current',
+    'fields.cell_temp': 'Cell Temp',
+    'fields.temp_coeff': 'Temp Coeff',
+    'fields.soiling': 'Soiling',
+    'fields.mismatch': 'Mismatch',
+    'fields.dc_ohmic': 'DC Ohmic',
+    'fields.shading': 'Shading',
+    'fields.inverter_efficiency': 'Inverter Eff.',
+    'fields.unit_price': 'Unit Price',
+    'fields.currency': 'Currency',
+    'fields.monthly_consumption': 'Monthly Consumption',
+    'summary.year_one_factor': 'Year-1 retained output',
+    'summary.coverage': 'Consumption coverage',
+    'summary.annual_savings': 'Annual savings',
+    'warnings.title': 'Engineering Warnings',
+    'warnings.invalid_panels': '{count} panels violate the current placement rules.',
+    'warnings.electrical_mismatch': 'Electrical reference differs by {mismatch}% (reference {ref} kW).',
+    'workspace.label': 'Placement Workspace',
+    'workspace.title': 'Precision Nesting + 3D Review',
+    'workspace.precision': 'Top / Precision',
+    'workspace.review': '3D / Review',
+    'workspace.panel_gap': 'Panel Gap',
+    'workspace.edge_gap': 'Edge Gap',
+    'workspace.auto_nest': 'Auto Nest',
+    'workspace.panels': 'panels',
+    'workspace.selected': 'selected',
+    'workspace.invalid': 'invalid',
+    'camera.fit': 'Fit',
+    'camera.iso': 'Iso',
+    'camera.top': 'Top',
+    'camera.front': 'Front',
+    'camera.reset': 'Reset',
+    'notices.layout_full': 'No valid placement remains inside the current envelope.',
+    'notices.auto_nested': 'Panel inserted at the nearest valid packing position.',
+    'notices.panel_added': 'Panel added to the current work envelope.',
+    'notices.select_panel': 'Select a panel before using this action.',
+    'notices.rotation_blocked': 'Rotation would violate spacing or bounds.',
+    'notices.rotation_relocated': 'Panel rotated and moved to the nearest valid position.',
+    'notices.rotation_ok': 'Panel rotation updated.',
+    'notices.panel_deleted': 'Selected panel removed.',
+    'notices.layout_cleared': 'All panels removed from the work envelope.',
+    'notices.exported': 'Project data exported as CSV.',
   },
   tr: {
-    'nav.dashboard': 'Panel',
-    'nav.projects': 'Projeler',
-    'nav.engineering': 'Mühendislik',
-    'hero.title': 'Ubden® Solar FX',
-    'hero.subtitle': 'Hassas Güneş Enerjisi Mühendisliği ve Simülasyon Portalı',
-    'config.panel_type': 'Panel Tipi',
-    'config.inverter_type': 'İnverter Tipi',
-    'config.angle': 'Eğim Açısı',
-    'config.azimuth': 'Azimut',
-    'stats.capacity': 'Tahmini Kapasite',
-    'stats.efficiency': 'Sistem Verimliliği',
-    'stats.output': 'Günlük Çıktı',
-    'stats.degradation': 'Yıllık Kayıp',
-    'stats.weather': 'Hava Durumu',
+    'portal.title': 'Güneş Mühendisliği Portalı',
+    'portal.badge.runtime': 'Çalışma Ortamı',
+    'portal.badge.engineering': 'Deterministik Model',
+    'actions.toggle_language': 'Dili değiştir',
+    'actions.toggle_theme': 'Temayı değiştir',
+    'actions.add_panel': 'Panel Ekle',
+    'actions.rotate': 'Döndür',
+    'actions.delete': 'Sil',
+    'actions.clear': 'Temizle',
+    'actions.export': 'CSV Aktar',
     'panel.mono': 'Monokristal',
     'panel.poly': 'Polikristal',
-    'inverter.string': 'Dizi İnverter',
+    'panel.small': 'Kompakt 430W',
+    'panel.medium': 'Prime 550W',
+    'panel.large': 'Utility 610W',
+    'inverter.string': 'String İnverter',
     'inverter.micro': 'Mikro İnverter',
     'inverter.hybrid': 'Hibrit İnverter',
-    'layout.title': 'Panel Yerleşim Planı',
-    'layout.add': 'Panel Ekle',
-    'layout.clear': 'Hepsini Temizle',
-    'layout.confirm_clear': 'Tüm panelleri temizlemek istediğinize emin misiniz?',
-    'layout.export': 'Projeyi Dışa Aktar',
-    'layout.rotate': 'Paneli Döndür',
-    'layout.width': 'Yerleşim Genişliği (m)',
-    'layout.height': 'Yerleşim Yüksekliği (m)',
-    'layout.dimensions': 'Yerleşim Boyutları',
-    'layout.panel_size': 'Panel Boyutu',
-    'panel.small': 'Küçük (300W)',
-    'panel.medium': 'Orta (450W)',
-    'panel.large': 'Büyük (600W)',
-    'engineering.details': 'Teknik Detaylar',
-    'engineering.voltage': 'Sistem Voltajı',
-    'engineering.current': 'Çalışma Akımı',
-    'engineering.temp': 'Hücre Sıcaklığı',
-    'config.degradation': 'Verim Kaybı Oranı',
-    'config.weather': 'Hava Durumu Faktörü',
-    'tooltip.add_panel': 'Yerleşime yeni bir güneş paneli ekle',
-    'tooltip.clear_all': 'Mevcut yerleşimdeki tüm panelleri kaldır',
-    'tooltip.export': 'Proje verilerini CSV olarak indir',
-    'tooltip.panel_type': 'Paneller için yarı iletken teknolojisini seçin',
-    'tooltip.inverter': 'Güç dönüştürme teknolojisini seçin',
-    'tooltip.angle': 'Panellerin zemine göre dikey eğimini ayarlayın',
-    'tooltip.azimuth': 'Yatay yönelimi ayarlayın (Kuzey=0, Doğu=90, Güney=180, Batı=270)',
-    'tooltip.degradation': 'Zamanla oluşan yıllık performans kaybını simüle edin',
-    'tooltip.weather': 'Yerel bulutluluk ve atmosferik koşullar için ayarlama yapın',
-    'financial.title': 'Finansal Analiz',
-    'financial.unit_price': 'Elektrik Birim Fiyatı',
-    'financial.currency': 'Para Birimi',
-    'financial.consumption': 'Ort. Aylık Tüketim',
-    'financial.savings_daily': 'Günlük Tasarruf',
-    'financial.savings_yearly': 'Yıllık Tasarruf',
-    'financial.coverage': 'Tüketim Karşılama',
-    'engineering.advanced': 'Gelişmiş Mühendislik Parametreleri',
-    'engineering.presets': 'Marka Şablonları',
-    'engineering.temp_coeff': 'Sıcaklık Katsayısı (Pmax)',
-    'engineering.soiling': 'Kirlenme Kaybı',
-    'engineering.mismatch': 'Uyumsuzluk Kaybı',
-    'engineering.dc_ohmic': 'DC Omik Kayıp',
-    'engineering.shading': 'Gölgelenme Kaybı',
-    'engineering.inverter_eff': 'İnverter Verimliliği',
-    'disclaimer.text': 'Not: Bu değerler optimum imkanlar ve teorik modellere göre hesaplanmıştır.',
+    'metrics.daily_energy': 'Günlük Enerji',
+    'metrics.daily_hint': 'Pik güneş saati ve deterministik kayıp modeli ile',
+    'metrics.annual_energy': 'Yıllık Enerji',
+    'metrics.annual_hint': 'Bozulma uygulanmadan ilk yıl projeksiyonu',
+    'metrics.fill_factor': 'Doluluk Oranı',
+    'metrics.electrical_consistency': 'Elektriksel Tutarlılık',
+    'metrics.monthly_savings': 'Aylık Tasarruf',
+    'metrics.coverage': 'karşılama',
+    'chart.label': 'Üretim Eğrisi',
+    'chart.title': 'Günlük Güç Profili',
+    'chart.summary': 'Tepe {peak} kWp | hava {weather} | kayıp katsayısı {loss}',
+    'chart.placeholder': 'Canlı üretim grafiği hazırlanıyor...',
+    'sidebar.layout_label': 'Proje Zarfı',
+    'sidebar.layout_title': 'Yerleşim + Kaynak Girdileri',
+    'sidebar.engineering_label': 'Elektrik Modeli',
+    'sidebar.engineering_title': 'Mühendislik Kısıtları',
+    'sidebar.financial_label': 'Ticari Katman',
+    'sidebar.financial_title': 'Finansal Girdiler',
+    'sidebar.summary_label': 'Karar Özeti',
+    'sidebar.summary_title': 'Hızlı Durum',
+    'fields.layout_width': 'Yerleşim Genişliği',
+    'fields.layout_height': 'Yerleşim Yüksekliği',
+    'fields.panel_type': 'Panel Tipi',
+    'fields.inverter_type': 'İnverter',
+    'fields.tilt': 'Eğim',
+    'fields.azimuth': 'Azimut',
+    'fields.weather_factor': 'Hava Faktörü',
+    'fields.peak_sun_hours': 'Pik Güneş Saati',
+    'fields.degradation': 'Bozulma',
+    'fields.system_voltage': 'Sistem Gerilimi',
+    'fields.operating_current': 'Çalışma Akımı',
+    'fields.cell_temp': 'Hücre Sıcaklığı',
+    'fields.temp_coeff': 'Sıcaklık Katsayısı',
+    'fields.soiling': 'Kirlenme',
+    'fields.mismatch': 'Uyumsuzluk',
+    'fields.dc_ohmic': 'DC Omik',
+    'fields.shading': 'Gölgelenme',
+    'fields.inverter_efficiency': 'İnverter Verimi',
+    'fields.unit_price': 'Birim Fiyat',
+    'fields.currency': 'Para Birimi',
+    'fields.monthly_consumption': 'Aylık Tüketim',
+    'summary.year_one_factor': '1. yıl kalan üretim',
+    'summary.coverage': 'Tüketim karşılama',
+    'summary.annual_savings': 'Yıllık tasarruf',
+    'warnings.title': 'Mühendislik Uyarıları',
+    'warnings.invalid_panels': '{count} panel mevcut yerleşim kurallarını ihlal ediyor.',
+    'warnings.electrical_mismatch': 'Elektriksel referans {mismatch}% sapıyor (referans {ref} kW).',
+    'workspace.label': 'Yerleşim Çalışma Alanı',
+    'workspace.title': 'Hassas Nesting + 3D İnceleme',
+    'workspace.precision': 'Üst / Hassas',
+    'workspace.review': '3D / İnceleme',
+    'workspace.panel_gap': 'Panel Aralığı',
+    'workspace.edge_gap': 'Kenar Payı',
+    'workspace.auto_nest': 'Oto Nest',
+    'workspace.panels': 'panel',
+    'workspace.selected': 'seçili',
+    'workspace.invalid': 'hatalı',
+    'camera.fit': 'Kadraj',
+    'camera.iso': 'İzo',
+    'camera.top': 'Üst',
+    'camera.front': 'Ön',
+    'camera.reset': 'Sıfırla',
+    'notices.layout_full': 'Mevcut zarf içinde geçerli boş yer kalmadı.',
+    'notices.auto_nested': 'Panel en yakın geçerli paketleme noktasına yerleştirildi.',
+    'notices.panel_added': 'Panel çalışma alanına eklendi.',
+    'notices.select_panel': 'Bu işlem için önce bir panel seçin.',
+    'notices.rotation_blocked': 'Döndürme boşluk veya sınır kuralını bozuyor.',
+    'notices.rotation_relocated': 'Panel döndürüldü ve en yakın geçerli konuma taşındı.',
+    'notices.rotation_ok': 'Panel rotasyonu güncellendi.',
+    'notices.panel_deleted': 'Seçili panel silindi.',
+    'notices.layout_cleared': 'Tüm paneller çalışma alanından kaldırıldı.',
+    'notices.exported': 'Proje verileri CSV olarak dışa aktarıldı.',
+  },
+};
+
+const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+
+function interpolate(template: string, params?: Record<string, string | number>) {
+  if (!params) {
+    return template;
   }
+
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => String(params[key] ?? `{${key}}`));
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
-
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('tr')
+  const [language, setLanguageState] = useState<Language>('tr');
 
   useEffect(() => {
-    const savedLang = localStorage.getItem('language') as Language
-    if (savedLang) {
-      setTimeout(() => setLanguageState(savedLang), 0)
+    const savedLang = localStorage.getItem('language') as Language | null;
+    if (savedLang === 'tr' || savedLang === 'en') {
+      setLanguageState(savedLang);
     }
-  }, [])
+  }, []);
 
   const setLanguage = (lang: Language) => {
-    setLanguageState(lang)
-    localStorage.setItem('language', lang)
-  }
+    setLanguageState(lang);
+    localStorage.setItem('language', lang);
+  };
 
-  const t = (key: string) => {
-    return (translations[language] as any)[key] || key
-  }
+  const t = (key: string, params?: Record<string, string | number>) => {
+    const template = translations[language][key] ?? translations.en[key] ?? key;
+    return interpolate(template, params);
+  };
 
-  return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
-      {children}
-    </LanguageContext.Provider>
-  )
+  return <LanguageContext.Provider value={{ language, setLanguage, t }}>{children}</LanguageContext.Provider>;
 }
 
 export function useLanguage() {
-  const context = useContext(LanguageContext)
+  const context = useContext(LanguageContext);
+
   if (context === undefined) {
-    throw new Error('useLanguage must be used within a LanguageProvider')
+    throw new Error('useLanguage must be used within a LanguageProvider');
   }
-  return context
+
+  return context;
 }
