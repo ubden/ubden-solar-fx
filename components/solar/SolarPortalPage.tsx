@@ -290,6 +290,7 @@ export function SolarPortalPage() {
 
     const nextPanel: PanelInstance = {
       id: createPanelId(),
+      panelSpecId: project.environment.panelSpecId,
       xM: placement.xM,
       yM: placement.yM,
       rotation: 0,
@@ -324,6 +325,7 @@ export function SolarPortalPage() {
       return;
     }
 
+    const selectedSpec = getPanelSpec(selectedPanel.panelSpecId);
     const nextRotation: Rotation = selectedPanel.rotation === 90 ? 0 : 90;
     const attempt = resolvePlacementAttempt(
       selectedPanel.id,
@@ -331,7 +333,7 @@ export function SolarPortalPage() {
       selectedPanel.yM,
       nextRotation,
       project.layout,
-      panelSpec,
+      selectedSpec,
       project.constraints,
     );
 
@@ -340,7 +342,7 @@ export function SolarPortalPage() {
         ...project.layout,
         panels: project.layout.panels.filter((panel) => panel.id !== selectedPanel.id),
       };
-      const fallback = findFirstAvailablePlacement(fallbackLayout, panelSpec, project.constraints, nextRotation);
+      const fallback = findFirstAvailablePlacement(fallbackLayout, selectedSpec, project.constraints, nextRotation);
       if (!fallback) {
         setLayoutNotice(t('notices.rotation_blocked'));
         return;
@@ -694,7 +696,6 @@ export function SolarPortalPage() {
         <FeasibilityReportPages
           pageRefs={reportPageRefs}
           project={project}
-          panelSpec={panelSpec}
           results={results}
           financialSummary={financialSummary}
           curve={curve}

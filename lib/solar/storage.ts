@@ -101,6 +101,7 @@ function migrateLegacyState(): ProjectState {
       const parsed = JSON.parse(raw) as Array<{ id: string | number; x: number; y: number; rotation?: number }>;
       return parsed.map((panel) => ({
         id: String(panel.id ?? createId()),
+        panelSpecId,
         xM: sanitizeNumber(panel.x / LEGACY_CANVAS_SCALE, 0, 0),
         yM: sanitizeNumber(panel.y / LEGACY_CANVAS_SCALE, 0, 0),
         rotation: panel.rotation === 90 ? 90 : 0,
@@ -186,6 +187,7 @@ export function sanitizeProjectState(project: ProjectState): ProjectState {
       heightM: sanitizeNumber(merged.layout.heightM, DEFAULT_PROJECT_STATE.layout.heightM, 4, 100),
       panels: merged.layout.panels.map((panel) => ({
         ...panel,
+        panelSpecId: panel.panelSpecId ?? merged.environment.panelSpecId,
         xM: sanitizeNumber(panel.xM, 0, 0),
         yM: sanitizeNumber(panel.yM, 0, 0),
         rotation: panel.rotation === 90 ? 90 : 0,

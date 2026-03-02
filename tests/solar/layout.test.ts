@@ -18,6 +18,7 @@ describe('layout engine', () => {
       panels: [
         {
           id: 'panel-a',
+          panelSpecId: 'medium' as const,
           xM: first!.xM,
           yM: first!.yM,
           rotation: 0 as const,
@@ -36,8 +37,8 @@ describe('layout engine', () => {
     const layout = {
       ...DEFAULT_PROJECT_STATE.layout,
       panels: [
-        { id: 'panel-a', xM: 0.2, yM: 0.2, rotation: 0 as const },
-        { id: 'panel-b', xM: 2.1, yM: 0.2, rotation: 0 as const },
+        { id: 'panel-a', panelSpecId: 'small' as const, xM: 0.2, yM: 0.2, rotation: 0 as const },
+        { id: 'panel-b', panelSpecId: 'small' as const, xM: 2.1, yM: 0.2, rotation: 0 as const },
       ],
     };
 
@@ -48,5 +49,20 @@ describe('layout engine', () => {
     const safeAttempt = resolvePlacementAttempt('panel-b', 2.2, 0.2, 0, layout, spec, DEFAULT_PROJECT_STATE.constraints);
     expect(safeAttempt.valid).toBe(true);
     expect(safeAttempt.xM).toBeGreaterThanOrEqual(2.1);
+  });
+
+  it('validates mixed panel sizes without overlap assumptions', () => {
+    const mediumSpec = getPanelSpec('medium');
+    const largeSpec = getPanelSpec('large');
+    const layout = {
+      ...DEFAULT_PROJECT_STATE.layout,
+      panels: [
+        { id: 'panel-a', panelSpecId: 'medium' as const, xM: 0.2, yM: 0.2, rotation: 0 as const },
+        { id: 'panel-b', panelSpecId: 'large' as const, xM: 2.6, yM: 0.2, rotation: 0 as const },
+      ],
+    };
+
+    expect(isPlacementValid('panel-a', 0.2, 0.2, 0, layout, mediumSpec, DEFAULT_PROJECT_STATE.constraints)).toBe(true);
+    expect(isPlacementValid('panel-b', 2.6, 0.2, 0, layout, largeSpec, DEFAULT_PROJECT_STATE.constraints)).toBe(true);
   });
 });

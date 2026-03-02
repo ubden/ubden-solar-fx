@@ -4,26 +4,25 @@ import { Canvas } from '@react-three/fiber';
 import { useMemo } from 'react';
 import { MathUtils } from 'three';
 
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { getPanelFootprint } from '@/lib/solar/layout';
-import { PanelCatalogItem, ProjectState } from '@/lib/solar/types';
+import { ProjectState } from '@/lib/solar/types';
 
 interface ReportLayoutReview3DProps {
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
   invalidPanelIds: string[];
 }
 
 function ReportSolarPanel({
   project,
-  panelSpec,
   invalid,
   panel,
 }: {
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
   invalid: boolean;
   panel: ProjectState['layout']['panels'][number];
 }) {
+  const panelSpec = getPanelSpec(panel.panelSpecId);
   const footprint = getPanelFootprint(panelSpec, panel.rotation);
   const tiltRad = useMemo(() => MathUtils.degToRad(project.environment.tiltDeg), [project.environment.tiltDeg]);
 
@@ -47,7 +46,7 @@ function ReportSolarPanel({
   );
 }
 
-export function ReportLayoutReview3D({ project, panelSpec, invalidPanelIds }: ReportLayoutReview3DProps) {
+export function ReportLayoutReview3D({ project, invalidPanelIds }: ReportLayoutReview3DProps) {
   const centerX = project.layout.widthM / 2;
   const centerZ = project.layout.heightM / 2;
   const dominant = Math.max(project.layout.widthM, project.layout.heightM, 6);
@@ -58,12 +57,15 @@ export function ReportLayoutReview3D({ project, panelSpec, invalidPanelIds }: Re
         shadows
         dpr={[1, 2]}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
-        camera={{ position: [centerX + dominant * 1.1, dominant * 1.1, centerZ + dominant * 1.1], fov: 38, near: 0.1, far: dominant * 30 }}
+        camera={{ position: [centerX, dominant * 3.1, centerZ + 0.001], fov: 24, near: 0.1, far: dominant * 40 }}
+        onCreated={({ camera }) => {
+          camera.lookAt(centerX, 0, centerZ);
+        }}
       >
         <color attach="background" args={['#eef4f8']} />
-        <ambientLight intensity={1.2} />
-        <hemisphereLight intensity={0.55} color="#ffffff" groundColor="#afbdca" />
-        <directionalLight castShadow intensity={1.3} position={[centerX + dominant * 0.6, dominant * 1.6, centerZ + dominant * 0.4]} shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
+        <ambientLight intensity={1.25} />
+        <hemisphereLight intensity={0.45} color="#ffffff" groundColor="#afbdca" />
+        <directionalLight castShadow intensity={1.1} position={[centerX, dominant * 3.6, centerZ]} shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
 
         <mesh receiveShadow rotation={[-Math.PI / 2, 0, 0]} position={[centerX, 0, centerZ]}>
           <planeGeometry args={[project.layout.widthM + 3, project.layout.heightM + 3]} />
@@ -78,7 +80,6 @@ export function ReportLayoutReview3D({ project, panelSpec, invalidPanelIds }: Re
           <ReportSolarPanel
             key={panel.id}
             project={project}
-            panelSpec={panelSpec}
             invalid={invalidPanelIds.includes(panel.id)}
             panel={panel}
           />

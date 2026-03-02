@@ -12,12 +12,18 @@ function quoteCsv(value: string | number) {
 }
 
 export function exportProjectCsv(project: ProjectState) {
-  const spec = getPanelSpec(project.environment.panelSpecId);
   const results = calculateYield(project);
+  const panelMix = Object.entries(
+    project.layout.panels.reduce<Record<string, number>>((accumulator, panel) => {
+      accumulator[panel.panelSpecId] = (accumulator[panel.panelSpecId] ?? 0) + 1;
+      return accumulator;
+    }, {}),
+  )
+    .map(([panelSpecId, count]) => `${getPanelSpec(panelSpecId as typeof project.environment.panelSpecId).label} x${count}`)
+    .join(' | ');
   const rows: Array<[string, string | number]> = [
-    ['Panel preset', spec.label],
-    ['Panel dimensions (m)', `${spec.widthM} x ${spec.heightM}`],
-    ['Panel wattage (W)', spec.wattsStc],
+    ['Active add preset', getPanelSpec(project.environment.panelSpecId).label],
+    ['Panel mix', panelMix || 'None'],
     ['Panel count', results.panelCount],
     ['Layout width (m)', project.layout.widthM],
     ['Layout height (m)', project.layout.heightM],
@@ -50,7 +56,11 @@ export function exportProjectCsv(project: ProjectState) {
   ];
 
   project.layout.panels.forEach((panel, index) => {
-    rows.push([`Panel ${index + 1}`, `${panel.id} @ (${panel.xM.toFixed(3)}m, ${panel.yM.toFixed(3)}m), rot=${panel.rotation}`]);
+    const spec = getPanelSpec(panel.panelSpecId);
+    rows.push([
+      `Panel ${index + 1}`,
+      `${panel.id} | ${spec.label} @ (${panel.xM.toFixed(3)}m, ${panel.yM.toFixed(3)}m), rot=${panel.rotation}`,
+    ]);
   });
 
   const csvContent = rows.map(([key, value]) => `${quoteCsv(key)},${quoteCsv(value)}`).join('\n');

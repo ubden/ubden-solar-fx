@@ -1,14 +1,14 @@
 'use client';
 
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { getPanelFootprint } from '@/lib/solar/layout';
-import { PanelCatalogItem, ProjectState } from '@/lib/solar/types';
+import { ProjectState } from '@/lib/solar/types';
 
 interface TechnicalLayoutFigureProps {
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
 }
 
-export function TechnicalLayoutFigure({ project, panelSpec }: TechnicalLayoutFigureProps) {
+export function TechnicalLayoutFigure({ project }: TechnicalLayoutFigureProps) {
   const viewBoxWidth = 1080;
   const viewBoxHeight = 680;
   const frameX = 100;
@@ -24,6 +24,14 @@ export function TechnicalLayoutFigure({ project, panelSpec }: TechnicalLayoutFig
   const usableY = originY + project.constraints.edgeGapM * scale;
   const usableWidth = Math.max(layoutWidth - project.constraints.edgeGapM * scale * 2, 0);
   const usableHeight = Math.max(layoutHeight - project.constraints.edgeGapM * scale * 2, 0);
+  const panelMixSummary = Object.entries(
+    project.layout.panels.reduce<Record<string, number>>((accumulator, panel) => {
+      accumulator[panel.panelSpecId] = (accumulator[panel.panelSpecId] ?? 0) + 1;
+      return accumulator;
+    }, {}),
+  )
+    .map(([panelSpecId, count]) => `${getPanelSpec(panelSpecId as typeof project.environment.panelSpecId).label} x${count}`)
+    .join(' | ');
 
   return (
     <svg viewBox={`0 0 ${viewBoxWidth} ${viewBoxHeight}`} className="h-full w-full rounded-[28px] border border-slate-200 bg-white">
@@ -48,6 +56,7 @@ export function TechnicalLayoutFigure({ project, panelSpec }: TechnicalLayoutFig
       />
 
       {project.layout.panels.map((panel, index) => {
+        const panelSpec = getPanelSpec(panel.panelSpecId);
         const footprint = getPanelFootprint(panelSpec, panel.rotation);
         const x = originX + panel.xM * scale;
         const y = originY + panel.yM * scale;
@@ -96,7 +105,7 @@ export function TechnicalLayoutFigure({ project, panelSpec }: TechnicalLayoutFig
         Teknik Yerleşim Çizimi
       </text>
       <text x={frameX} y={frameY - 4} fontSize="12" fill="#64748b">
-        Panel tipi {panelSpec.label} | Panel sayısı {project.layout.panels.length} | Kenar payı {project.constraints.edgeGapM.toFixed(2)} m
+        Panel karması {panelMixSummary || 'Belirtilmedi'} | Panel sayısı {project.layout.panels.length} | Kenar payı {project.constraints.edgeGapM.toFixed(2)} m
       </text>
     </svg>
   );

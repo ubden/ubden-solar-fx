@@ -91,6 +91,14 @@ export function WorkspacePanel({
 }: WorkspacePanelProps) {
   const { t } = useLanguage();
   const selectedCount = project.layout.selectedPanelId ? 1 : 0;
+  const panelMixSummary = Object.entries(
+    project.layout.panels.reduce<Record<string, number>>((accumulator, panel) => {
+      accumulator[panel.panelSpecId] = (accumulator[panel.panelSpecId] ?? 0) + 1;
+      return accumulator;
+    }, {}),
+  )
+    .map(([panelSpecId, count]) => `${t(`panel.${panelSpecId}`)} x${count}`)
+    .join(' | ');
 
   return (
     <section className="glass-card overflow-hidden border-border/70 bg-white/88 dark:bg-slate-950/72">
@@ -237,9 +245,10 @@ export function WorkspacePanel({
         ) : null}
 
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-[color:var(--muted-text)]">
-          <span>{panelSpec.label}</span>
+          <span>Aktif ekleme: {panelSpec.label}</span>
           <span>{panelSpec.widthM.toFixed(2)}m x {panelSpec.heightM.toFixed(2)}m</span>
           <span>{panelSpec.wattsStc}W STC</span>
+          <span>{panelMixSummary || 'Henüz panel yok'}</span>
           <span>{project.layout.panels.length} {t('workspace.panels')}</span>
           <span>{selectedCount} {t('workspace.selected')}</span>
           <span>{results.invalidPanelIds.length} {t('workspace.invalid')}</span>
@@ -257,7 +266,6 @@ export function WorkspacePanel({
           <PrecisionLayoutEditor
             layout={project.layout}
             constraints={project.constraints}
-            panelSpec={panelSpec}
             invalidPanelIds={results.invalidPanelIds}
             selectedPanelId={project.layout.selectedPanelId}
             onSelectPanel={onSelectPanel}
@@ -266,7 +274,6 @@ export function WorkspacePanel({
         ) : (
           <LayoutReview3D
             project={project}
-            panelSpec={panelSpec}
             invalidPanelIds={results.invalidPanelIds}
             onBackgroundClick={() => onSelectPanel(null)}
           />

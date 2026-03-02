@@ -11,6 +11,6 @@ export const REPORT_SECTION_COPY = {
   systemSubtitle: 'Mühendislik ve ticari girdiler, üretim eğrisi ile birlikte sunulur.',
   layoutTitle: '2D Teknik Çizim',
   layoutSubtitle: 'Yerleşim alanı, panel adedi ve ölçülendirme referansı.',
-  reviewTitle: '3D Yerleşim İncelemesi',
-  reviewSubtitle: 'İzometrik görünümle genel saha yerleşimi.',
+  reviewTitle: 'Üstten Yerleşim Görünümü',
+  reviewSubtitle: 'PDF için üstten bakışla okunabilir yerleşim görünümü.',
 };

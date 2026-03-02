@@ -1,3 +1,4 @@
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { LayoutFootprint, LayoutSpec, PanelCatalogItem, PanelInstance, PlacementConstraints, PlacementResult, Rotation } from '@/lib/solar/types';
 import { clamp, roundTo } from '@/lib/solar/number';
 
@@ -13,8 +14,8 @@ export function getPanelFootprint(spec: PanelCatalogItem, rotation: Rotation): L
   return { widthM: spec.widthM, heightM: spec.heightM };
 }
 
-export function getPanelRect(panel: PanelInstance, spec: PanelCatalogItem) {
-  const footprint = getPanelFootprint(spec, panel.rotation);
+export function getPanelRect(panel: PanelInstance) {
+  const footprint = getPanelFootprint(getPanelSpec(panel.panelSpecId), panel.rotation);
   return {
     xM: panel.xM,
     yM: panel.yM,
@@ -44,7 +45,6 @@ export function hasCollision(
   yM: number,
   footprint: LayoutFootprint,
   panels: PanelInstance[],
-  spec: PanelCatalogItem,
   constraints: PlacementConstraints,
 ) {
   return panels.some((panel) => {
@@ -52,7 +52,7 @@ export function hasCollision(
       return false;
     }
 
-    const other = getPanelRect(panel, spec);
+    const other = getPanelRect(panel);
     return (
       xM < other.xM + other.widthM + constraints.panelGapM &&
       xM + footprint.widthM + constraints.panelGapM > other.xM &&
@@ -74,7 +74,7 @@ export function isPlacementValid(
   const footprint = getPanelFootprint(spec, rotation);
   return (
     isWithinBounds(xM, yM, footprint, layout, constraints) &&
-    !hasCollision(panelId, xM, yM, footprint, layout.panels, spec, constraints)
+    !hasCollision(panelId, xM, yM, footprint, layout.panels, constraints)
   );
 }
 
@@ -136,7 +136,7 @@ export function resolvePlacementAttempt(
 ): PlacementResult {
   const footprint = getPanelFootprint(spec, rotation);
   const otherPanels = layout.panels.filter((panel) => panel.id !== panelId).map((panel) => ({
-    rect: getPanelRect(panel, spec),
+    rect: getPanelRect(panel),
   }));
   const xCandidates = getCandidateAxisValues(
     targetX,
@@ -195,14 +195,14 @@ function getBottomLeftCandidates(
   const xCandidates = [
     constraints.edgeGapM,
     ...layout.panels.map((panel) => {
-      const rect = getPanelRect(panel, spec);
+      const rect = getPanelRect(panel);
       return rect.xM + rect.widthM + constraints.panelGapM;
     }),
   ];
   const yCandidates = [
     constraints.edgeGapM,
     ...layout.panels.map((panel) => {
-      const rect = getPanelRect(panel, spec);
+      const rect = getPanelRect(panel);
       return rect.yM + rect.heightM + constraints.panelGapM;
     }),
   ];
@@ -239,11 +239,13 @@ export function findFirstAvailablePlacement(
 
 export function validateLayout(
   layout: LayoutSpec,
-  spec: PanelCatalogItem,
   constraints: PlacementConstraints,
 ) {
   const invalidPanelIds = layout.panels
-    .filter((panel) => !isPlacementValid(panel.id, panel.xM, panel.yM, panel.rotation, layout, spec, constraints))
+    .filter((panel) => {
+      const spec = getPanelSpec(panel.panelSpecId);
+      return !isPlacementValid(panel.id, panel.xM, panel.yM, panel.rotation, layout, spec, constraints);
+    })
     .map((panel) => panel.id);
 
   const totalAreaM2 = layout.widthM * layout.heightM;
@@ -252,7 +254,7 @@ export function validateLayout(
   const usableAreaM2 = usableWidthM * usableHeightM;
   const usedAreaM2 = roundTo(
     layout.panels.reduce((sum, panel) => {
-      const footprint = getPanelFootprint(spec, panel.rotation);
+      const footprint = getPanelFootprint(getPanelSpec(panel.panelSpecId), panel.rotation);
       return sum + footprint.widthM * footprint.heightM;
     }, 0),
     2,

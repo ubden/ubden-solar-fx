@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { useElementSize } from '@/hooks/use-element-size';
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { getPanelFootprint, resolvePlacementAttempt } from '@/lib/solar/layout';
-import { LayoutSpec, PanelCatalogItem, PanelInstance, PlacementConstraints } from '@/lib/solar/types';
+import { LayoutSpec, PanelInstance, PlacementConstraints } from '@/lib/solar/types';
 
 interface DragState {
   panelId: string;
@@ -20,7 +21,6 @@ interface DragState {
 interface PrecisionLayoutEditorProps {
   layout: LayoutSpec;
   constraints: PlacementConstraints;
-  panelSpec: PanelCatalogItem;
   invalidPanelIds: string[];
   selectedPanelId: string | null;
   onSelectPanel: (panelId: string | null) => void;
@@ -46,7 +46,6 @@ function getPanelPreview(panel: PanelInstance, dragState: DragState | null) {
 export function PrecisionLayoutEditor({
   layout,
   constraints,
-  panelSpec,
   invalidPanelIds,
   selectedPanelId,
   onSelectPanel,
@@ -75,13 +74,15 @@ export function PrecisionLayoutEditor({
 
       const deltaXM = (event.clientX - current.startClientX) / pixelsPerMeter;
       const deltaYM = (event.clientY - current.startClientY) / pixelsPerMeter;
+      const movingPanel = layout.panels.find((panel) => panel.id === current.panelId);
+      const movingSpec = getPanelSpec(movingPanel?.panelSpecId ?? 'medium');
       const attempted = resolvePlacementAttempt(
         current.panelId,
         current.originXM + deltaXM,
         current.originYM + deltaYM,
-        layout.panels.find((panel) => panel.id === current.panelId)?.rotation ?? 0,
+        movingPanel?.rotation ?? 0,
         layout,
-        panelSpec,
+        movingSpec,
         constraints,
       );
       const nextState = {
@@ -113,7 +114,7 @@ export function PrecisionLayoutEditor({
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [constraints, layout, onMovePanel, panelSpec, pixelsPerMeter]);
+  }, [constraints, layout, onMovePanel, pixelsPerMeter]);
 
   return (
     <div ref={containerRef} className="relative h-[680px] min-h-[520px] rounded-[28px] border border-border/80 bg-slate-950/4 p-5 dark:bg-white/3">
@@ -156,6 +157,7 @@ export function PrecisionLayoutEditor({
           />
 
           {layout.panels.map((panel, index) => {
+            const panelSpec = getPanelSpec(panel.panelSpecId);
             const footprint = getPanelFootprint(panelSpec, panel.rotation);
             const preview = getPanelPreview(panel, dragState);
             const widthPx = footprint.widthM * pixelsPerMeter;
@@ -218,6 +220,7 @@ export function PrecisionLayoutEditor({
                 <div className="absolute inset-x-0 bottom-0 h-3 bg-linear-to-r from-slate-950/90 to-slate-700/80" />
                 <div className="absolute left-2 top-2 flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.14em] text-white/70">
                   <span>#{index + 1}</span>
+                  <span>{panelSpec.label}</span>
                   <span>{panel.rotation}°</span>
                 </div>
                 <div className="absolute bottom-2 right-2 rounded-full bg-white/10 px-2 py-1 text-[10px] font-mono uppercase tracking-[0.14em] text-white/80">

@@ -10,8 +10,8 @@ describe('deterministic yield model', () => {
       layout: {
         ...DEFAULT_PROJECT_STATE.layout,
         panels: [
-          { id: 'panel-a', xM: 0.2, yM: 0.2, rotation: 0 as const },
-          { id: 'panel-b', xM: 2.4, yM: 0.2, rotation: 0 as const },
+          { id: 'panel-a', panelSpecId: 'medium' as const, xM: 0.2, yM: 0.2, rotation: 0 as const },
+          { id: 'panel-b', panelSpecId: 'medium' as const, xM: 2.4, yM: 0.2, rotation: 0 as const },
         ],
       },
       environment: {
@@ -50,7 +50,7 @@ describe('deterministic yield model', () => {
       ...DEFAULT_PROJECT_STATE,
       layout: {
         ...DEFAULT_PROJECT_STATE.layout,
-        panels: [{ id: 'panel-a', xM: 0.2, yM: 0.2, rotation: 0 as const }],
+        panels: [{ id: 'panel-a', panelSpecId: 'medium' as const, xM: 0.2, yM: 0.2, rotation: 0 as const }],
       },
       financial: {
         ...DEFAULT_PROJECT_STATE.financial,
@@ -82,7 +82,7 @@ describe('deterministic yield model', () => {
       ...DEFAULT_PROJECT_STATE,
       layout: {
         ...DEFAULT_PROJECT_STATE.layout,
-        panels: [{ id: 'panel-a', xM: 0.2, yM: 0.2, rotation: 0 as const }],
+        panels: [{ id: 'panel-a', panelSpecId: 'medium' as const, xM: 0.2, yM: 0.2, rotation: 0 as const }],
       },
       environment: {
         ...DEFAULT_PROJECT_STATE.environment,
@@ -96,5 +96,22 @@ describe('deterministic yield model', () => {
     expect(getMetricState(project, result)).toBe('warning');
     expect(explanations.dailyEnergy.warning).toContain('Hava faktörü 0');
     expect(explanations.monthlySavings.state).toBe('warning');
+  });
+
+  it('sums mixed panel wattages when multiple panel sizes coexist', () => {
+    const project = {
+      ...DEFAULT_PROJECT_STATE,
+      layout: {
+        ...DEFAULT_PROJECT_STATE.layout,
+        panels: [
+          { id: 'panel-a', panelSpecId: 'small' as const, xM: 0.2, yM: 0.2, rotation: 0 as const },
+          { id: 'panel-b', panelSpecId: 'large' as const, xM: 2.2, yM: 0.2, rotation: 0 as const },
+        ],
+      },
+    };
+
+    const result = calculateYield(project);
+
+    expect(result.dcNameplateKWp).toBe(1.04);
   });
 });

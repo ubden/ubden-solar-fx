@@ -30,6 +30,7 @@ export interface PanelCatalogItem {
 
 export interface PanelInstance {
   id: string;
+  panelSpecId: PanelSizeId;
   xM: number;
   yM: number;
   rotation: Rotation;

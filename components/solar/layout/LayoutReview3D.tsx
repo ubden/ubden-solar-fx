@@ -6,12 +6,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { BufferGeometry, Float32BufferAttribute, LineBasicMaterial, MathUtils, PerspectiveCamera as PerspectiveCameraImpl, Vector3 } from 'three';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { getPanelFootprint } from '@/lib/solar/layout';
-import { PanelCatalogItem, ProjectState } from '@/lib/solar/types';
+import { ProjectState } from '@/lib/solar/types';
 
 interface LayoutReview3DProps {
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
   invalidPanelIds: string[];
   onBackgroundClick: () => void;
 }
@@ -36,15 +36,14 @@ function createCellGridGeometry(width: number, height: number, cols: number, row
 
 function SolarPanelMesh({
   project,
-  panelSpec,
   invalid,
   panel,
 }: {
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
   invalid: boolean;
   panel: ProjectState['layout']['panels'][number];
 }) {
+  const panelSpec = getPanelSpec(panel.panelSpecId);
   const footprint = getPanelFootprint(panelSpec, panel.rotation);
   const tiltRad = MathUtils.degToRad(project.environment.tiltDeg);
   const lineGeometry = useMemo(
@@ -81,7 +80,7 @@ function SolarPanelMesh({
   );
 }
 
-function SceneContent({ project, panelSpec, invalidPanelIds }: Omit<LayoutReview3DProps, 'onBackgroundClick'>) {
+function SceneContent({ project, invalidPanelIds }: Omit<LayoutReview3DProps, 'onBackgroundClick'>) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const { camera } = useThree();
 
@@ -156,7 +155,6 @@ function SceneContent({ project, panelSpec, invalidPanelIds }: Omit<LayoutReview
         <SolarPanelMesh
           key={panel.id}
           project={project}
-          panelSpec={panelSpec}
           invalid={invalidPanelIds.includes(panel.id)}
           panel={panel}
         />
@@ -181,11 +179,11 @@ function SceneContent({ project, panelSpec, invalidPanelIds }: Omit<LayoutReview
   );
 }
 
-export default function LayoutReview3D({ project, panelSpec, invalidPanelIds, onBackgroundClick }: LayoutReview3DProps) {
+export default function LayoutReview3D({ project, invalidPanelIds, onBackgroundClick }: LayoutReview3DProps) {
   return (
     <div className="h-[680px] overflow-hidden rounded-[28px] border border-border/80 bg-slate-200/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] dark:bg-slate-900/80">
       <Canvas shadows dpr={[1, 1.8]} onPointerMissed={onBackgroundClick}>
-        <SceneContent project={project} panelSpec={panelSpec} invalidPanelIds={invalidPanelIds} />
+        <SceneContent project={project} invalidPanelIds={invalidPanelIds} />
       </Canvas>
     </div>
   );

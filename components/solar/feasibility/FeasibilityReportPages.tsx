@@ -2,6 +2,7 @@
 
 import { MutableRefObject, useMemo } from 'react';
 
+import { getPanelSpec } from '@/lib/solar/catalog';
 import { ReportLayoutReview3D } from '@/components/solar/report/ReportLayoutReview3D';
 import { TechnicalLayoutFigure } from '@/components/solar/report/TechnicalLayoutFigure';
 import { REPORT_PAGE_DESCRIPTORS, getQuoteSummary } from '@/lib/solar/report/build-report-pages';
@@ -10,7 +11,6 @@ import {
   FeasibilityReportSnapshot,
   FinancialSummary,
   MetricDefinition,
-  PanelCatalogItem,
   ProjectState,
   YieldResult,
 } from '@/lib/solar/types';
@@ -18,7 +18,6 @@ import {
 interface FeasibilityReportPagesProps {
   pageRefs: MutableRefObject<Array<HTMLDivElement | null>>;
   project: ProjectState;
-  panelSpec: PanelCatalogItem;
   results: YieldResult;
   financialSummary: FinancialSummary;
   curve: Array<{ time: string; power: number }>;
@@ -115,7 +114,6 @@ function BrandList({ title, values }: { title: string; values: string[] }) {
 export function FeasibilityReportPages({
   pageRefs,
   project,
-  panelSpec,
   results,
   financialSummary,
   curve,
@@ -123,6 +121,18 @@ export function FeasibilityReportPages({
   snapshot,
 }: FeasibilityReportPagesProps) {
   const quoteSummary = getQuoteSummary(snapshot);
+  const panelMixSummary = useMemo(
+    () =>
+      Object.entries(
+        project.layout.panels.reduce<Record<string, number>>((accumulator, panel) => {
+          accumulator[panel.panelSpecId] = (accumulator[panel.panelSpecId] ?? 0) + 1;
+          return accumulator;
+        }, {}),
+      )
+        .map(([panelSpecId, count]) => `${getPanelSpec(panelSpecId as typeof project.environment.panelSpecId).label} x${count}`)
+        .join(' | '),
+    [project.environment.panelSpecId, project.layout.panels],
+  );
 
   return (
     <div className="pointer-events-none absolute -left-[200vw] top-0 z-[-1] flex flex-col gap-8">
@@ -175,7 +185,7 @@ export function FeasibilityReportPages({
 
                 <div className="mt-6 grid gap-5 md:grid-cols-2">
                   <div className="rounded-[24px] border border-slate-200 bg-white px-6 py-5">
-                    <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-slate-500">Teklif Yapisi</p>
+                    <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-slate-500">Teklif Yapısı</p>
                     <p className="mt-3 text-lg font-medium">{snapshot.quote.mode === 'separate_quote' ? 'Fiyat teklifi ayrıca verilecek' : 'Anahtar teslim fiyat aralığı'}</p>
                     <p className="mt-2 text-sm text-slate-600">{quoteSummary}</p>
                   </div>
@@ -231,52 +241,48 @@ export function FeasibilityReportPages({
                   <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">{REPORT_SECTION_COPY.systemSubtitle}</p>
                 </div>
 
-                <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-                  <div className="space-y-4">
-                    <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-                      <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Üretim Eğrisi / Günlük Güç Profili</p>
-                      <ReportChart curve={curve} />
-                      <p className="mt-4 text-xs leading-5 text-slate-500">
-                        Bu grafik gün içi göreceli güç profilini gösterir; gerçek üretim saha, sıcaklık, gölge ve işletme koşullarına göre değişebilir.
-                      </p>
+                <div className="mt-8 grid gap-4 xl:grid-cols-3">
+                  <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Yerleşim ve Ekipman</p>
+                    <div className="mt-4 space-y-2 text-sm text-slate-700">
+                      <p>Yerleşim boyutu: {project.layout.widthM.toFixed(2)} x {project.layout.heightM.toFixed(2)} m</p>
+                      <p>Panel karması: {panelMixSummary || 'Belirtilmedi'}</p>
+                      <p>Panel sayısı: {results.panelCount}</p>
+                      <p>Panel tipi: {project.environment.panelType}</p>
+                      <p>İnverter tipi: {project.environment.inverterType}</p>
                     </div>
                   </div>
 
-                  <div className="grid gap-4">
-                    <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
-                      <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Yerleşim ve Ekipman</p>
-                      <div className="mt-4 space-y-2 text-sm text-slate-700">
-                        <p>Yerleşim boyutu: {project.layout.widthM.toFixed(2)} x {project.layout.heightM.toFixed(2)} m</p>
-                        <p>Panel boyutu: {panelSpec.widthM.toFixed(2)} x {panelSpec.heightM.toFixed(2)} m</p>
-                        <p>Panel sayısı: {results.panelCount}</p>
-                        <p>Panel tipi: {project.environment.panelType}</p>
-                        <p>İnverter tipi: {project.environment.inverterType}</p>
-                      </div>
-                    </div>
-
-                    <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
-                      <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Elektrik Modeli / Mühendislik Kısıtları</p>
-                      <div className="mt-4 space-y-2 text-sm text-slate-700">
-                        {snapshot.engineering.map((item) => (
-                          <p key={item.label}>
-                            {item.label}: {item.value}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
-                      <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Ticari Katman / Finansal Girdiler</p>
-                      <div className="mt-4 space-y-2 text-sm text-slate-700">
-                        {snapshot.financial.map((item) => (
-                          <p key={item.label}>
-                            {item.label}: {item.value}
-                          </p>
-                        ))}
-                        <p>Aylık tasarruf: {financialSummary.monthlySavings.toFixed(2)} {project.financial.currency}</p>
-                      </div>
+                  <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Elektrik Modeli / Mühendislik Kısıtları</p>
+                    <div className="mt-4 space-y-2 text-sm text-slate-700">
+                      {snapshot.engineering.map((item) => (
+                        <p key={item.label}>
+                          {item.label}: {item.value}
+                        </p>
+                      ))}
                     </div>
                   </div>
+
+                  <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4">
+                    <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Ticari Katman / Finansal Girdiler</p>
+                    <div className="mt-4 space-y-2 text-sm text-slate-700">
+                      {snapshot.financial.map((item) => (
+                        <p key={item.label}>
+                          {item.label}: {item.value}
+                        </p>
+                      ))}
+                      <p>Aylık tasarruf: {financialSummary.monthlySavings.toFixed(2)} {project.financial.currency}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-3 text-[11px] font-mono uppercase tracking-[0.18em] text-slate-500">Üretim Eğrisi / Günlük Güç Profili</p>
+                  <ReportChart curve={curve} />
+                  <p className="mt-4 text-xs leading-5 text-slate-500">
+                    Bu grafik gün içi göreceli güç profilini gösterir; gerçek üretim saha, sıcaklık, gölge ve işletme koşullarına göre değişebilir.
+                  </p>
                 </div>
 
                 <ReportFooter />
@@ -292,7 +298,7 @@ export function FeasibilityReportPages({
                 </div>
 
                 <div className="mt-8 flex-1">
-                  <TechnicalLayoutFigure project={project} panelSpec={panelSpec} />
+                  <TechnicalLayoutFigure project={project} />
                 </div>
 
                 <ReportFooter />
@@ -308,7 +314,7 @@ export function FeasibilityReportPages({
                 </div>
 
                 <div className="mt-8">
-                  <ReportLayoutReview3D project={project} panelSpec={panelSpec} invalidPanelIds={results.invalidPanelIds} />
+                  <ReportLayoutReview3D project={project} invalidPanelIds={results.invalidPanelIds} />
                 </div>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-3">

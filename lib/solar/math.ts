@@ -5,7 +5,6 @@ import {
   FinancialSummary,
   MetricComputedState,
   MetricExplanationMap,
-  PanelCatalogItem,
   PanelInstance,
   ProjectState,
   YieldResult,
@@ -16,19 +15,19 @@ import { clamp, roundTo } from '@/lib/solar/number';
 const DEG_TO_RAD = Math.PI / 180;
 const ELECTRICAL_WARNING_THRESHOLD = 70;
 
-function getTotalPanelArea(panels: PanelInstance[], spec: PanelCatalogItem): number {
+function getTotalPanelArea(panels: PanelInstance[]): number {
   return panels.reduce((sum, panel) => {
-    const footprint = getPanelFootprint(spec, panel.rotation);
+    const footprint = getPanelFootprint(getPanelSpec(panel.panelSpecId), panel.rotation);
     return sum + footprint.widthM * footprint.heightM;
   }, 0);
 }
 
 export function calculateYield(project: ProjectState): YieldResult {
-  const spec = getPanelSpec(project.environment.panelSpecId);
   const panelCount = project.layout.panels.length;
-  const validation = validateLayout(project.layout, spec, project.constraints);
+  const validation = validateLayout(project.layout, project.constraints);
 
-  const dcNameplateKWp = (panelCount * spec.wattsStc) / 1000;
+  const dcNameplateKWp =
+    project.layout.panels.reduce((sum, panel) => sum + getPanelSpec(panel.panelSpecId).wattsStc, 0) / 1000;
   const tiltFactor = clamp(Math.cos((project.environment.tiltDeg - 30) * DEG_TO_RAD), 0, 1);
   const azimuthDeviation = Math.min(Math.abs(project.environment.azimuthDeg - 180), 180);
   const azimuthFactor = clamp(Math.cos(azimuthDeviation * DEG_TO_RAD), 0, 1);
@@ -300,6 +299,5 @@ export function createGenerationCurve(yieldResult: YieldResult) {
 }
 
 export function getProjectPanelArea(project: ProjectState): number {
-  const spec = getPanelSpec(project.environment.panelSpecId);
-  return roundTo(getTotalPanelArea(project.layout.panels, spec), 2);
+  return roundTo(getTotalPanelArea(project.layout.panels), 2);
 }
