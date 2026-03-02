@@ -198,6 +198,7 @@ export function sanitizeProjectState(project: ProjectState): ProjectState {
     },
     environment: {
       ...merged.environment,
+      profileTemplateId: merged.environment.profileTemplateId ?? DEFAULT_PROJECT_STATE.environment.profileTemplateId,
       tiltDeg: sanitizeNumber(merged.environment.tiltDeg, DEFAULT_PROJECT_STATE.environment.tiltDeg, 0, 90),
       azimuthDeg: sanitizeNumber(merged.environment.azimuthDeg, DEFAULT_PROJECT_STATE.environment.azimuthDeg, 0, 360),
       degradationPct: sanitizeNumber(

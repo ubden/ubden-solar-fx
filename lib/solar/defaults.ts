@@ -2,7 +2,7 @@ import { FeasibilityFormState, ProjectState } from '@/lib/solar/types';
 
 export const STORAGE_KEY = 'ubden-solar-fx:v2';
 export const LEGACY_CANVAS_SCALE = 40;
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 export const DEFAULT_FEASIBILITY_STATE: FeasibilityFormState = {
   customerName: '',
@@ -38,6 +38,7 @@ export const DEFAULT_PROJECT_STATE: ProjectState = {
     gridStepM: 0.05,
   },
   environment: {
+    profileTemplateId: 'manual',
     panelSpecId: 'medium',
     panelType: 'mono',
     inverterType: 'string',

@@ -12,6 +12,7 @@ import { WorkspacePanel } from '@/components/solar/WorkspacePanel';
 import { useLanguage } from '@/context/LanguageContext';
 import { getPanelSpec } from '@/lib/solar/catalog';
 import { DEFAULT_PROJECT_STATE } from '@/lib/solar/defaults';
+import { applyEngineeringTemplate, getEngineeringTemplate, resetTechnicalInputsToDefaults } from '@/lib/solar/engineering-presets';
 import { exportProjectCsv } from '@/lib/solar/export';
 import { hasFeasibilityErrors, validateFeasibilityForm } from '@/lib/solar/feasibility-config';
 import { findFirstAvailablePlacement, resolvePlacementAttempt } from '@/lib/solar/layout';
@@ -182,13 +183,15 @@ export function SolarPortalPage() {
       | 'azimuthDeg'
       | 'degradationPct'
       | 'weatherFactorPct'
-      | 'peakSunHours',
+      | 'peakSunHours'
+      | 'profileTemplateId',
     value: string | number,
   ) {
     commitProject((current) => ({
       ...current,
       environment: {
         ...current.environment,
+        profileTemplateId: key === 'profileTemplateId' ? current.environment.profileTemplateId : 'manual',
         [key]: value,
       },
     }));
@@ -209,11 +212,31 @@ export function SolarPortalPage() {
   ) {
     commitProject((current) => ({
       ...current,
+      environment: {
+        ...current.environment,
+        profileTemplateId: 'manual',
+      },
       engineering: {
         ...current.engineering,
         [key]: value,
       },
     }));
+  }
+
+  function applyTechnicalTemplate(templateId: Exclude<ProjectState['environment']['profileTemplateId'], 'manual'>) {
+    const template = getEngineeringTemplate(templateId);
+
+    if (!template) {
+      return;
+    }
+
+    commitProject((current) => applyEngineeringTemplate(current, templateId));
+    setLayoutNotice(`${template.label} teknik profili uygulandı.`);
+  }
+
+  function resetTechnicalDefaults() {
+    commitProject((current) => resetTechnicalInputsToDefaults(current));
+    setLayoutNotice('Teknik girdiler varsayılan değerlere sıfırlandı.');
   }
 
   function updateFinancialField(key: 'unitPrice' | 'currency' | 'monthlyConsumptionKWh', value: string | number) {
@@ -623,6 +646,8 @@ export function SolarPortalPage() {
             onEnvironmentFieldChange={updateEnvironmentField}
             onEngineeringFieldChange={updateEngineeringField}
             onFinancialFieldChange={updateFinancialField}
+            onApplyEngineeringTemplate={applyTechnicalTemplate}
+            onResetTechnicalDefaults={resetTechnicalDefaults}
           />
 
           <div className="flex flex-col gap-5">

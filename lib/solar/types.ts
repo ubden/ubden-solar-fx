@@ -5,6 +5,7 @@ export type WorkspaceMode = 'precision' | 'review3d';
 export type CameraPreset = 'fit' | 'top' | 'front' | 'iso' | 'reset';
 export type CurrencySymbol = '$' | '€' | '₺';
 export type Rotation = 0 | 90;
+export type EngineeringTemplateId = 'manual' | 'tr-central' | 'de-central' | 'es-mediterranean' | 'us-southwest';
 export type QuoteMode = 'turnkey_range' | 'separate_quote';
 export type MetricComputedState = 'ready' | 'empty' | 'warning';
 export type MetricId =
@@ -49,6 +50,7 @@ export interface PlacementConstraints {
 }
 
 export interface EnvironmentSettings {
+  profileTemplateId: EngineeringTemplateId;
   panelSpecId: PanelSizeId;
   panelType: PanelType;
   inverterType: InverterType;
