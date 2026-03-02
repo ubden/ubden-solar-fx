@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { useLanguage } from '@/context/LanguageContext';
 import { useElementSize } from '@/hooks/use-element-size';
-import { YieldResult } from '@/lib/solar/types';
+import { MetricDefinition, YieldResult } from '@/lib/solar/types';
 
 interface EnergyChartCardProps {
   curve: Array<{ time: string; power: number }>;
   results: YieldResult;
+  chartMetric: MetricDefinition;
 }
 
-export function EnergyChartCard({ curve, results }: EnergyChartCardProps) {
+export function EnergyChartCard({ curve, results, chartMetric }: EnergyChartCardProps) {
   const { t } = useLanguage();
   const [isMounted, setIsMounted] = useState(false);
   const { ref: chartRef, size } = useElementSize<HTMLDivElement>();
@@ -61,16 +62,18 @@ export function EnergyChartCard({ curve, results }: EnergyChartCardProps) {
           <h2 className="font-display text-2xl font-semibold tracking-tight">{t('chart.title')}</h2>
         </div>
         <div className="rounded-2xl border border-border/80 bg-black/3 px-4 py-2 text-sm text-[color:var(--muted-text)] dark:bg-white/5">
-          {t('chart.summary', {
-            peak: results.dcNameplateKWp.toFixed(2),
-            weather: results.weatherFactor.toFixed(2),
-            loss: results.lossFactor.toFixed(2),
-          })}
+          {chartMetric.state === 'warning'
+            ? chartMetric.warning
+            : t('chart.summary', {
+                peak: results.dcNameplateKWp.toFixed(2),
+                weather: results.weatherFactor.toFixed(2),
+                loss: results.lossFactor.toFixed(2),
+              })}
         </div>
       </div>
 
       <div ref={chartRef} className="h-[300px]">
-        {isMounted && chartGeometry ? (
+        {chartMetric.state !== 'empty' && isMounted && chartGeometry ? (
           <svg width={chartGeometry.width} height={chartGeometry.height} className="h-full w-full">
             <defs>
               <linearGradient id="solarCurve" x1="0" y1="0" x2="0" y2="1">
@@ -122,11 +125,16 @@ export function EnergyChartCard({ curve, results }: EnergyChartCardProps) {
             ))}
           </svg>
         ) : (
-          <div className="flex h-full items-center justify-center rounded-3xl border border-dashed border-border/70 text-sm text-[color:var(--muted-text)]">
-            {t('chart.placeholder')}
+          <div className="flex h-full flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-border/70 px-6 text-center text-sm text-[color:var(--muted-text)]">
+            <p className="text-base font-medium text-[color:var(--text)]">{t('chart.empty_title')}</p>
+            <p className="max-w-xl leading-6">{chartMetric.warning ?? chartMetric.hint}</p>
           </div>
         )}
       </div>
+
+      <p className="mt-4 text-sm leading-6 text-[color:var(--muted-text)]">
+        {chartMetric.description} {t('chart.user_explainer')}
+      </p>
     </section>
   );
 }

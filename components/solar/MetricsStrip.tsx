@@ -1,69 +1,60 @@
 'use client';
 
-import { BatteryCharging, Gauge, Layers3, SunMedium, Zap } from 'lucide-react';
+import { BatteryCharging, Gauge, Layers3, PiggyBank, PlugZap, SunMedium, Zap } from 'lucide-react';
 
-import { useLanguage } from '@/context/LanguageContext';
-import { FinancialSummary, YieldResult } from '@/lib/solar/types';
+import { MetricDefinition } from '@/lib/solar/types';
 
 interface MetricsStripProps {
-  results: YieldResult;
-  financialSummary: FinancialSummary;
+  metrics: MetricDefinition[];
 }
 
 const metricIcons = {
-  daily: SunMedium,
-  annual: Zap,
-  fill: Layers3,
-  electric: Gauge,
-  savings: BatteryCharging,
+  dailyEnergy: SunMedium,
+  annualEnergy: Zap,
+  fillFactor: Layers3,
+  electricalConsistency: Gauge,
+  monthlySavings: BatteryCharging,
+  coverage: PlugZap,
+  annualSavings: PiggyBank,
 };
 
-export function MetricsStrip({ results, financialSummary }: MetricsStripProps) {
-  const { t } = useLanguage();
-  const metrics = [
-    {
-      key: 'daily',
-      label: t('metrics.daily_energy'),
-      value: `${results.dailyEnergyKWh.toFixed(1)} kWh`,
-      hint: t('metrics.daily_hint'),
-    },
-    {
-      key: 'annual',
-      label: t('metrics.annual_energy'),
-      value: `${results.annualEnergyKWh.toFixed(0)} kWh`,
-      hint: t('metrics.annual_hint'),
-    },
-    {
-      key: 'fill',
-      label: t('metrics.fill_factor'),
-      value: `${results.fillFactor.toFixed(1)}%`,
-      hint: `${results.usedAreaM2.toFixed(1)} / ${results.usableAreaM2.toFixed(1)} m²`,
-    },
-    {
-      key: 'electric',
-      label: t('metrics.electrical_consistency'),
-      value: `${results.electricalConsistencyPct.toFixed(1)}%`,
-      hint: `${results.electricalReferenceKW.toFixed(2)} kW ref`,
-    },
-    {
-      key: 'savings',
-      label: t('metrics.monthly_savings'),
-      value: `${financialSummary.monthlySavings.toFixed(0)} / mo`,
-      hint: `${financialSummary.coveragePct.toFixed(1)}% ${t('metrics.coverage')}`,
-    },
-  ] as const;
+function getStateTone(state: MetricDefinition['state']) {
+  if (state === 'warning') {
+    return 'border-amber-300/80 from-amber-50 to-white';
+  }
 
+  if (state === 'empty') {
+    return 'border-border/70 from-slate-50 to-white';
+  }
+
+  return 'border-emerald-300/60 from-white to-emerald-50';
+}
+
+export function MetricsStrip({ metrics }: MetricsStripProps) {
   return (
-    <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-5">
+    <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-7">
       {metrics.map((metric) => {
-        const Icon = metricIcons[metric.key];
+        const Icon = metricIcons[metric.id];
+        const helperLine = metric.warning ?? metric.hint;
 
         return (
           <article
-            key={metric.key}
-            className="glass-card relative overflow-hidden border-border/70 bg-linear-to-br from-white to-slate-50 px-5 py-4 dark:from-slate-950 dark:to-slate-900"
+            key={metric.id}
+            className={[
+              'glass-card relative overflow-hidden px-5 py-4',
+              `bg-linear-to-br ${getStateTone(metric.state)}`,
+            ].join(' ')}
           >
-            <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-accent to-amber-300" />
+            <div
+              className={[
+                'absolute inset-x-0 top-0 h-1',
+                metric.state === 'warning'
+                  ? 'bg-linear-to-r from-amber-500 to-orange-300'
+                  : metric.state === 'empty'
+                    ? 'bg-linear-to-r from-slate-300 to-slate-200'
+                    : 'bg-linear-to-r from-emerald-400 to-accent',
+              ].join(' ')}
+            />
             <div className="mb-4 flex items-center justify-between">
               <span className="text-[11px] font-mono uppercase tracking-[0.22em] text-[color:var(--muted-text)]">
                 {metric.label}
@@ -71,7 +62,8 @@ export function MetricsStrip({ results, financialSummary }: MetricsStripProps) {
               <Icon size={16} className="text-accent" />
             </div>
             <div className="font-display text-3xl font-semibold tracking-tight">{metric.value}</div>
-            <p className="mt-2 text-sm text-[color:var(--muted-text)]">{metric.hint}</p>
+            <p className="mt-2 text-sm text-[color:var(--text)]">{metric.description}</p>
+            <p className="mt-2 text-sm text-[color:var(--muted-text)]">{helperLine}</p>
           </article>
         );
       })}

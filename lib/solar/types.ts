@@ -5,6 +5,16 @@ export type WorkspaceMode = 'precision' | 'review3d';
 export type CameraPreset = 'fit' | 'top' | 'front' | 'iso' | 'reset';
 export type CurrencySymbol = '$' | '€' | '₺';
 export type Rotation = 0 | 90;
+export type QuoteMode = 'turnkey_range' | 'separate_quote';
+export type MetricComputedState = 'ready' | 'empty' | 'warning';
+export type MetricId =
+  | 'dailyEnergy'
+  | 'annualEnergy'
+  | 'fillFactor'
+  | 'electricalConsistency'
+  | 'monthlySavings'
+  | 'coverage'
+  | 'annualSavings';
 
 export interface PanelCatalogItem {
   id: PanelSizeId;
@@ -72,13 +82,64 @@ export interface CameraViewState {
   preset: CameraPreset;
 }
 
+export interface GeoLocationState {
+  status: 'idle' | 'fetching' | 'success' | 'error';
+  latitude?: number;
+  longitude?: number;
+  accuracyMeters?: number;
+  capturedAt?: string;
+  errorMessage?: string;
+}
+
+export interface CustomerProfile {
+  customerName: string;
+  phone: string;
+  addressLine: string;
+  geoLocation: GeoLocationState;
+}
+
+export interface PriceRange {
+  min?: number;
+  max?: number;
+  currency: CurrencySymbol;
+}
+
+export interface BrandOption {
+  id: string;
+  label: string;
+}
+
+export interface BrandSelectionGroup {
+  selected: string[];
+  other: string;
+}
+
+export interface FeasibilityFormState {
+  customerName: string;
+  phone: string;
+  addressLine: string;
+  geoLocation: GeoLocationState;
+  inverterBrands: string[];
+  inverterBrandOther: string;
+  panelBrands: string[];
+  panelBrandOther: string;
+  quoteMode: QuoteMode;
+  turnkeyPriceMin?: number;
+  turnkeyPriceMax?: number;
+  priceCurrency: CurrencySymbol;
+  notes: string;
+  lastGeneratedAt?: string;
+}
+
 export interface ProjectState {
+  schemaVersion: number;
   layout: LayoutSpec;
   constraints: PlacementConstraints;
   environment: EnvironmentSettings;
   engineering: EngineeringSettings;
   financial: FinancialSettings;
   camera: CameraViewState;
+  feasibility: FeasibilityFormState;
 }
 
 export interface LayoutFootprint {
@@ -121,4 +182,39 @@ export interface FinancialSummary {
   annualSavings: number;
   monthlySavings: number;
   coveragePct: number;
+}
+
+export interface MetricExplanation {
+  state: MetricComputedState;
+  description: string;
+  hint: string;
+  warning?: string;
+}
+
+export type MetricExplanationMap = Record<MetricId, MetricExplanation>;
+
+export interface MetricDefinition extends MetricExplanation {
+  id: MetricId;
+  label: string;
+  value: string;
+}
+
+export interface ReportSummaryField {
+  label: string;
+  value: string;
+}
+
+export interface FeasibilityReportSnapshot {
+  generatedAt: string;
+  customer: CustomerProfile;
+  quote: PriceRange & {
+    mode: QuoteMode;
+    note: string;
+  };
+  inverterBrands: string[];
+  panelBrands: string[];
+  metricStates: Record<MetricId, MetricComputedState>;
+  overview: ReportSummaryField[];
+  engineering: ReportSummaryField[];
+  financial: ReportSummaryField[];
 }

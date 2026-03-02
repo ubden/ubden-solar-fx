@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { BoxSelect, Camera, Download, Layers2, Plus, RefreshCcw, RotateCw, Trash2 } from 'lucide-react';
+import { BoxSelect, Camera, Download, FileBadge2, Layers2, Plus, RefreshCcw, RotateCw, Trash2 } from 'lucide-react';
 
 import { PrecisionLayoutEditor } from '@/components/solar/layout/PrecisionLayoutEditor';
 import { useLanguage } from '@/context/LanguageContext';
@@ -30,6 +30,7 @@ interface WorkspacePanelProps {
   onClearPanels: () => void;
   onRotateSelected: () => void;
   onDeleteSelected: () => void;
+  onOpenFeasibility: () => void;
   onSelectPanel: (panelId: string | null) => void;
   onMovePanel: (panelId: string, xM: number, yM: number) => void;
   onCameraPreset: (preset: ProjectState['camera']['preset']) => void;
@@ -83,6 +84,7 @@ export function WorkspacePanel({
   onClearPanels,
   onRotateSelected,
   onDeleteSelected,
+  onOpenFeasibility,
   onSelectPanel,
   onMovePanel,
   onCameraPreset,
@@ -215,6 +217,10 @@ export function WorkspacePanel({
             <button onClick={onExport} className="action-button-secondary">
               <Download size={16} />
               {t('actions.export')}
+            </button>
+            <button onClick={onOpenFeasibility} className="action-button-secondary">
+              <FileBadge2 size={16} />
+              {t('actions.feasibility')}
             </button>
           </div>
         </div>

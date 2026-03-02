@@ -1,9 +1,30 @@
-import { ProjectState } from '@/lib/solar/types';
+import { FeasibilityFormState, ProjectState } from '@/lib/solar/types';
 
 export const STORAGE_KEY = 'ubden-solar-fx:v2';
 export const LEGACY_CANVAS_SCALE = 40;
+export const CURRENT_SCHEMA_VERSION = 3;
+
+export const DEFAULT_FEASIBILITY_STATE: FeasibilityFormState = {
+  customerName: '',
+  phone: '',
+  addressLine: '',
+  geoLocation: {
+    status: 'idle',
+  },
+  inverterBrands: [],
+  inverterBrandOther: '',
+  panelBrands: [],
+  panelBrandOther: '',
+  quoteMode: 'turnkey_range',
+  turnkeyPriceMin: undefined,
+  turnkeyPriceMax: undefined,
+  priceCurrency: '₺',
+  notes: '',
+  lastGeneratedAt: undefined,
+};
 
 export const DEFAULT_PROJECT_STATE: ProjectState = {
+  schemaVersion: CURRENT_SCHEMA_VERSION,
   layout: {
     widthM: 10,
     heightM: 10,
@@ -46,4 +67,5 @@ export const DEFAULT_PROJECT_STATE: ProjectState = {
   camera: {
     preset: 'fit',
   },
+  feasibility: DEFAULT_FEASIBILITY_STATE,
 };
