@@ -154,7 +154,7 @@ export function FeasibilityReportPages({
             {page.id === 'cover' ? (
               <>
                 <div className="rounded-[28px] bg-[linear-gradient(135deg,#fff8eb_0%,#ffffff_48%,#eff6ff_100%)] p-8">
-                  <p className="text-[11px] font-mono uppercase tracking-[0.32em] text-amber-600">Ubden Solar FX</p>
+                  <p className="text-[11px] font-mono uppercase tracking-[0.32em] text-amber-600">PEAK SOLAR</p>
                   <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight">{REPORT_SECTION_COPY.coverTitle}</h1>
                   <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">{REPORT_SECTION_COPY.coverSubtitle}</p>
                 </div>

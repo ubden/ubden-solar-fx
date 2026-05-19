@@ -23,7 +23,7 @@ export function buildReportFilename(snapshot: FeasibilityReportSnapshot) {
     .replace(/^-+|-+$/g, '');
 
   const baseName = customerSlug || 'musteri';
-  return `ubden-solar-fx-fizibilite-${baseName}.pdf`;
+  return `peak-solar-fizibilite-${baseName}.pdf`;
 }
 
 export function getQuoteSummary(snapshot: FeasibilityReportSnapshot) {

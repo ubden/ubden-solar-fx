@@ -2,7 +2,7 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Ubden Solar FX Portal
+# PEAK SOLAR Portal
 
 Advanced solar array planning workspace with deterministic energy calculations, meter-based nesting, and a dedicated 3D review scene.
 
@@ -26,5 +26,5 @@ The repo is pinned to Node 22 via [`.nvmrc`](./.nvmrc) and `package.json > engin
 
 ## Notes
 
-- The app stores project state under `ubden-solar-fx:v2` in local storage and migrates legacy scattered keys on first load.
+- The app stores project state under `peak-solar-fx:v2` in local storage and migrates legacy scattered keys on first load.
 - External CI or Docker images should use a Node 22 base image to stay aligned with the repo toolchain.
