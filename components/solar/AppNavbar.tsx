@@ -14,11 +14,11 @@ export function AppNavbar() {
       <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-4 py-4 md:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-accent/20 bg-linear-to-br from-accent to-amber-300 text-lg font-bold text-slate-950 shadow-lg shadow-amber-500/20">
-            U
+            P
           </div>
           <div>
             <p className="text-[11px] font-mono uppercase tracking-[0.32em] text-[color:var(--muted-text)]">
-              Ubden Solar FX
+              PEAK SOLAR
             </p>
             <h1 className="font-display text-xl font-semibold tracking-tight">{t('portal.title')}</h1>
           </div>

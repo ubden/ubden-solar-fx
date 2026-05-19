@@ -210,9 +210,8 @@ export function ControlSidebar({
               onChange={(event) => onFinancialFieldChange('currency', event.target.value)}
               className="field-input"
             >
-              <option value="$">$ USD</option>
               <option value="€">€ EUR</option>
-              <option value="₺">₺ TRY</option>
+              <option value="$">$ USD</option>
             </select>
           </label>
           <RangeField

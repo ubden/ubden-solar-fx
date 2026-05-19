@@ -69,7 +69,7 @@ export function FeasibilityModal({
       <div className="flex h-full w-full max-w-[1260px] flex-col overflow-hidden rounded-[32px] border border-white/10 bg-[color:var(--bg-secondary)] shadow-[0_40px_120px_rgba(15,23,42,0.45)]">
         <div className="flex items-center justify-between border-b border-border/80 px-5 py-4 md:px-7">
           <div>
-            <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-[color:var(--muted-text)]">Ubden Solar FX</p>
+            <p className="text-[11px] font-mono uppercase tracking-[0.28em] text-[color:var(--muted-text)]">PEAK SOLAR</p>
             <h2 className="font-display text-3xl font-semibold tracking-tight">Fizibilite Formu</h2>
           </div>
           <button type="button" onClick={onClose} className="rounded-full border border-border/80 p-3 transition hover:border-accent hover:text-accent">

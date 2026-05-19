@@ -1,4 +1,4 @@
-export const REPORT_WATERMARK = 'Ubden Solar FX Watermark';
+export const REPORT_WATERMARK = 'PEAK SOLAR Watermark';
 export const REPORT_DISCLAIMER =
   'Bu fizibilitede yer alan tüm ölçü birimleri ve değerler optimum koşullara göre hesaplanmıştır. Gerçek kullanım sonuçları farklılık gösterebilir.';
 

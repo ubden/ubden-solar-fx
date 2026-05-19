@@ -67,7 +67,7 @@ export function exportProjectCsv(project: ProjectState) {
   const uri = `data:text/csv;charset=utf-8,${encodeURIComponent(csvContent)}`;
   const link = document.createElement('a');
   link.href = uri;
-  link.download = `ubden_solar_project_${Date.now()}.csv`;
+  link.download = `peak_solar_project_${Date.now()}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

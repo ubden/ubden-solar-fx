@@ -20,7 +20,7 @@ export function QuoteFields({
   onCurrencyChange,
   onNotesChange,
 }: QuoteFieldsProps) {
-  const currencies: CurrencySymbol[] = ['₺', '$', '€'];
+  const currencies: CurrencySymbol[] = ['€', '$'];
 
   return (
     <section className="rounded-[24px] border border-border/80 bg-white/70 p-5 dark:bg-slate-950/45">

@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Ubden® Solar FX | Engineering Portal',
+  title: 'PEAK SOLAR | Engineering Portal',
   description: 'Advanced Solar Energy Project Management and Simulation Portal',
   icons: {
     icon: '/icon.svg',

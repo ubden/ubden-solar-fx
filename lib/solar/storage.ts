@@ -3,6 +3,7 @@ import {
   CURRENT_SCHEMA_VERSION,
   DEFAULT_FEASIBILITY_STATE,
   DEFAULT_PROJECT_STATE,
+  LEGACY_STORAGE_KEY,
   LEGACY_CANVAS_SCALE,
   STORAGE_KEY,
 } from '@/lib/solar/defaults';
@@ -297,7 +298,10 @@ export function loadProjectState(): ProjectState {
     return DEFAULT_PROJECT_STATE;
   }
 
-  const stored = localStorage.getItem(STORAGE_KEY);
+  const storedCurrent = localStorage.getItem(STORAGE_KEY);
+  const storedLegacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+  const stored = storedCurrent ?? storedLegacy;
+  const shouldPromoteLegacyStorage = !storedCurrent && Boolean(storedLegacy);
 
   if (stored) {
     try {
@@ -305,12 +309,25 @@ export function loadProjectState(): ProjectState {
       if (typeof parsed.schemaVersion !== 'number' || parsed.schemaVersion < CURRENT_SCHEMA_VERSION) {
         const migrated = migrateStoredProjectState(parsed);
         saveProjectState(migrated);
+        if (shouldPromoteLegacyStorage) {
+          localStorage.removeItem(LEGACY_STORAGE_KEY);
+        }
         return migrated;
       }
 
-      return sanitizeProjectState(parsed as ProjectState);
+      const sanitized = sanitizeProjectState(parsed as ProjectState);
+      if (shouldPromoteLegacyStorage) {
+        saveProjectState(sanitized);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
+      return sanitized;
     } catch {
-      localStorage.removeItem(STORAGE_KEY);
+      if (storedCurrent) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+      if (storedLegacy) {
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
     }
   }
 
